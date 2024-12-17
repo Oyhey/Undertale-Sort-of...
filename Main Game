@@ -1,0 +1,427 @@
+import pygame
+from pygame import KEYDOWN
+import random
+from pygame import USEREVENT
+
+
+pygame.init()
+
+SCREEN_WIDTH = 1440
+SCREEN_HEIGHT = int(SCREEN_WIDTH*0.6)
+
+background_image = pygame.image.load("smokingcigars.png")
+background_image = pygame.transform.scale(background_image, (1440, 792))
+
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+
+start = False
+start2 = False
+
+#player
+
+direction = "right"
+
+buff = 1
+
+def playerspeed(speed):
+    finalspeed = speed * buff
+    return finalspeed
+
+dash_active = False
+dash_timer = 0
+DASH_DURATION = 100  #in milliseconds
+
+cp_right = pygame.Rect((311, 250, 13, 25))
+
+cp_left = pygame.Rect((299, 250, 13, 25))
+
+cp_down = pygame.Rect((299, 275, 25, 1))
+
+cp_up = pygame.Rect((299, 249, 25, 1))
+
+core = pygame.Rect((300, 250, 23, 23))
+
+def collision(object):
+    if dash_active == True:
+        if cp_right.colliderect(object):
+            cp_right.move_ip(-playerspeed(10), 0)
+            cp_left.move_ip(-playerspeed(10), 0)
+            cp_down.move_ip(-playerspeed(10), 0)
+            cp_up.move_ip(-playerspeed(10), 0)
+            core.move_ip(-playerspeed(10), 0)
+        if cp_left.colliderect(object):
+            cp_left.move_ip(playerspeed(10), 0)
+            cp_right.move_ip(playerspeed(10), 0)
+            cp_down.move_ip(playerspeed(10), 0)
+            cp_up.move_ip(playerspeed(10), 0)
+            core.move_ip(playerspeed(10), 0)
+        if cp_down.colliderect(object):
+            cp_left.move_ip(0, -playerspeed(10))
+            cp_right.move_ip(0, -playerspeed(10))
+            cp_down.move_ip(0, -playerspeed(10))
+            cp_up.move_ip(0, -playerspeed(10))
+            core.move_ip(0, -playerspeed(10))
+        if cp_up.colliderect(object):
+            cp_left.move_ip(0, playerspeed(10))
+            cp_right.move_ip(0, playerspeed(10))
+            cp_down.move_ip(0, playerspeed(10))
+            cp_up.move_ip(0, playerspeed(10))
+            core.move_ip(0, playerspeed(10))
+    elif dash_active == False:
+        if cp_right.colliderect(object):
+            cp_right.move_ip(-playerspeed(3), 0)
+            cp_left.move_ip(-playerspeed(3), 0)
+            cp_down.move_ip(-playerspeed(3), 0)
+            cp_up.move_ip(-playerspeed(3), 0)
+            core.move_ip(-playerspeed(3), 0)
+        if cp_left.colliderect(object):
+            cp_left.move_ip(playerspeed(3), 0)
+            cp_right.move_ip(playerspeed(3), 0)
+            cp_down.move_ip(playerspeed(3), 0)
+            cp_up.move_ip(playerspeed(3), 0)
+            core.move_ip(playerspeed(3), 0)
+        if cp_down.colliderect(object):
+            cp_left.move_ip(0, -playerspeed(3))
+            cp_right.move_ip(0, -playerspeed(3))
+            cp_down.move_ip(0, -playerspeed(3))
+            cp_up.move_ip(0, -playerspeed(3))
+            core.move_ip(0, -playerspeed(3))
+        if cp_up.colliderect(object):
+            cp_left.move_ip(0, playerspeed(3))
+            cp_right.move_ip(0, playerspeed(3))
+            cp_down.move_ip(0, playerspeed(3))
+            cp_up.move_ip(0, playerspeed(3))
+            core.move_ip(0, playerspeed(3))
+        if cp_up.colliderect(object) and core.colliderect(object):
+            cp_left.move_ip(0, playerspeed(8))
+            cp_right.move_ip(0, playerspeed(8))
+            cp_down.move_ip(0, playerspeed(8))
+            cp_up.move_ip(0, playerspeed(8))
+            core.move_ip(0, playerspeed(8))
+        if cp_down.colliderect(object) and core.colliderect(object):
+            cp_left.move_ip(0, -playerspeed(8))
+            cp_right.move_ip(0, -playerspeed(8))
+            cp_down.move_ip(0, -playerspeed(8))
+            cp_up.move_ip(0, -playerspeed(8))
+            core.move_ip(0, -playerspeed(8))
+        if cp_left.colliderect(object) and core.colliderect(object):
+            cp_left.move_ip(playerspeed(8), 0)
+            cp_right.move_ip(playerspeed(8), 0)
+            cp_down.move_ip(playerspeed(8), 0)
+            cp_up.move_ip(playerspeed(8), 0)
+            core.move_ip(playerspeed(8), 0)
+        if cp_right.colliderect(object) and core.colliderect(object):
+            cp_right.move_ip(-playerspeed(8), 0)
+            cp_left.move_ip(-playerspeed(8), 0)
+            cp_down.move_ip(-playerspeed(8), 0)
+            cp_up.move_ip(-playerspeed(8), 0)
+            core.move_ip(-playerspeed(8), 0)
+
+playerstopmove = False
+
+def playermoveleft (x):
+    cp_right.move_ip(-x, 0)
+    cp_left.move_ip(-x, 0)
+    cp_down.move_ip(-x, 0)
+    cp_up.move_ip(-x, 0)
+    core.move_ip(-x, 0)
+def playermoveright (x):
+    cp_right.move_ip(x, 0)
+    cp_left.move_ip(x, 0)
+    cp_down.move_ip(x, 0)
+    cp_up.move_ip(x, 0)
+    core.move_ip(x, 0)
+def playermoveup (y):
+    cp_right.move_ip(0, -y)
+    cp_left.move_ip(0, -y)
+    cp_down.move_ip(0, -y)
+    cp_up.move_ip(0, -y)
+    core.move_ip(0, -y)
+def playermovedown (y):
+    cp_right.move_ip(0, y)
+    cp_left.move_ip(0, y)
+    cp_down.move_ip(0, y)
+    cp_up.move_ip(0, y)
+    core.move_ip(0, y)
+
+def dash():
+    if direction == "down":
+        cp_right.move_ip(0, playerspeed(7))
+        cp_left.move_ip(0, playerspeed(7))
+        cp_down.move_ip(0, playerspeed(7))
+        cp_up.move_ip(0, playerspeed(7))
+        core.move_ip(0, playerspeed(7))
+    elif direction == "left":
+        cp_right.move_ip(-playerspeed(7), 0)
+        cp_left.move_ip(-playerspeed(7),0)
+        cp_down.move_ip(-playerspeed(7), 0)
+        cp_up.move_ip(-playerspeed(7), 0)
+        core.move_ip(-playerspeed(7), 0)
+    elif direction == "up":
+        cp_right.move_ip(0, -playerspeed(7))
+        cp_left.move_ip(0, -playerspeed(7))
+        cp_down.move_ip(0, -playerspeed(7))
+        cp_up.move_ip(0, -playerspeed(7))
+        core.move_ip(0, -playerspeed(7))
+    elif direction == "right":
+        cp_right.move_ip(playerspeed(7), 0)
+        cp_left.move_ip(playerspeed(7),0)
+        cp_down.move_ip(playerspeed(7), 0)
+        cp_up.move_ip(playerspeed(7), 0)
+        core.move_ip(playerspeed(7), 0)
+    elif direction == "dr":
+        cp_right.move_ip(playerspeed(5), playerspeed(5))
+        cp_left.move_ip(playerspeed(5), playerspeed(5))
+        cp_down.move_ip(playerspeed(5), playerspeed(5))
+        cp_up.move_ip(playerspeed(5), playerspeed(5))
+        core.move_ip(playerspeed(5), playerspeed(5))
+    elif direction == "ur":
+        cp_right.move_ip(playerspeed(5), -playerspeed(5))
+        cp_left.move_ip(playerspeed(5), -playerspeed(5))
+        cp_down.move_ip(playerspeed(5), -playerspeed(5))
+        cp_up.move_ip(playerspeed(5), -playerspeed(5))
+        core.move_ip(playerspeed(5), -playerspeed(5))
+    elif direction == "dl":
+        cp_right.move_ip(-playerspeed(5), playerspeed(5))
+        cp_left.move_ip(-playerspeed(5), playerspeed(5))
+        cp_down.move_ip(-playerspeed(5), playerspeed(5))
+        cp_up.move_ip(-playerspeed(5), playerspeed(5))
+        core.move_ip(-playerspeed(5), playerspeed(5))
+    elif direction == "ul":
+        cp_right.move_ip(-playerspeed(5), -playerspeed(5))
+        cp_left.move_ip(-playerspeed(5), -playerspeed(5))
+        cp_down.move_ip(-playerspeed(5), -playerspeed(5))
+        cp_up.move_ip(-playerspeed(5), -playerspeed(5))
+        core.move_ip(-playerspeed(5), -playerspeed(5))
+
+#map
+#1440 * 864
+Edge_1 = pygame.Rect((50, 50, 1340, 10))
+Edge_2 = pygame.Rect((50, 50, 10, 764))
+Edge_3 = pygame.Rect((50, 814, 1340, 10))
+Edge_4 = pygame.Rect((1390, 50, 10, 764))
+#speed boosts
+
+lives = 3
+
+#weapon
+
+main_attack = pygame.Rect(250, 140, 40, 40)
+
+picked = 0
+
+#boss
+
+ATTACK_DURATION = 300 #in milliseconds
+WARNING_DURATION = 500
+ATTACK_COOLDOWN = 600
+attack_timer = 0
+attack_cooldown = 0
+attack_timer2 = 0
+ATTACK_DURATION2 = 300
+WARNING_DURATION2 = 500
+
+atk = False
+atk2 = False
+finish = False
+finish2 = False
+
+attack_y = random.randint(50, 814)
+attack_x = random.randint(50, 1390)
+attack_1 = pygame.Rect(attack_x, 10000, 50, 1000)
+attack_2 = pygame.Rect(10000, attack_y, 1000, 50)
+warner = pygame.Rect(attack_x - 20, 20, 40, 40)
+warnerbro = pygame.Rect(20, attack_y - 19, 100, 100)
+
+#text
+
+text_font = pygame.font.SysFont("Open Sans", 30)
+
+def draw_text(text,font,text_col,x,y):
+    img = font.render(text, True, text_col)
+    screen.blit(img,(x, y))
+
+def draw_var(text, font,text_col,x, y):
+    image = font.render(str(lives), True, text_col)
+    screen.blit(image,(x, y))
+
+#drawing rectangles
+
+def rect(color, object):
+    pygame.draw.rect(screen, (color), object)
+
+#game loop
+#EVENT LOOP
+
+run = True
+while run:
+
+    screen.fill((0, 0, 0))
+
+    screen.blit(background_image, (0, 0))
+
+    collision(Edge_1)
+    collision(Edge_2)
+    collision(Edge_3)
+    collision(Edge_4)
+    if core.colliderect(main_attack):
+        picked = True
+        if picked == True:
+            pygame.time.set_timer(USEREVENT+1, random.randint (1000, 2000))
+            pygame.time.set_timer(USEREVENT+2, random.randint (1000, 2000))
+
+    if core.colliderect(attack_1):
+        lives = lives - 1
+    if core.colliderect(attack_2):
+        lives = lives - 1
+
+    if picked == False:
+        draw_text("Start Game?", text_font, (0, 255, 0), 100, 150)
+        draw_text("avoid the blue beams, WASD and Q to dash. Good luck.", text_font, (0,255, 0), 400, 300)
+        draw_text("if you're feeling confident you can try hard.py, also background was removed (for hard) since you cant see anything", text_font, (0, 255, 0), 200, 500)
+        draw_var(lives, text_font, (0, 255, 0), 60, 60)
+
+    rect((255, 255, 255), Edge_1)
+    rect((255, 255, 255), Edge_2)
+    rect((255, 255, 255), Edge_3)
+    rect((255, 255, 255), Edge_4)
+
+    if picked == False:
+        rect((0, 255, 0), main_attack)
+        pygame.draw.rect(screen, (0, 0, 255), cp_right)
+        pygame.draw.rect(screen, (0, 0, 255), cp_left)
+        pygame.draw.rect(screen, (0, 0, 255), cp_down)
+        pygame.draw.rect(screen, (0, 0, 255), cp_up)
+        pygame.draw.rect(screen,(0, 0, 255), core)
+    if picked == True:
+        pygame.draw.rect(screen, (0, 255, 255), cp_right)
+        pygame.draw.rect(screen, (0, 255, 255), cp_left)
+        pygame.draw.rect(screen, (0, 255, 255), cp_down)
+        pygame.draw.rect(screen, (0, 255, 255), cp_up)
+        pygame.draw.rect(screen, (0, 255, 255), core)
+
+    key = pygame.key.get_pressed()
+
+#movement
+
+    if key[pygame.K_a] == True and playerstopmove == False:
+        cp_right.move_ip(-playerspeed(1), 0)
+        cp_left.move_ip(-playerspeed(1),0)
+        cp_down.move_ip(-playerspeed(1), 0)
+        cp_up.move_ip(-playerspeed(1), 0)
+        core.move_ip(-playerspeed(1), 0)
+        direction = "left"
+
+    if key[pygame.K_d] == True and playerstopmove == False:
+        cp_right.move_ip(playerspeed(1), 0)
+        cp_left.move_ip(playerspeed(1),0)
+        cp_down.move_ip(playerspeed(1), 0)
+        cp_up.move_ip(playerspeed(1), 0)
+        core.move_ip(playerspeed(1), 0)
+        direction = "right"
+
+    if key[pygame.K_w] == True and playerstopmove == False:
+        cp_right.move_ip(0, -playerspeed(1))
+        cp_left.move_ip(0, -playerspeed(1))
+        cp_down.move_ip(0, -playerspeed(1))
+        cp_up.move_ip(0, -playerspeed(1))
+        core.move_ip(0, -playerspeed(1))
+        direction = "up"
+
+    if key[pygame.K_s] == True and playerstopmove == False:
+        cp_right.move_ip(0, playerspeed(1))
+        cp_left.move_ip(0, playerspeed(1))
+        cp_down.move_ip(0, playerspeed(1))
+        cp_up.move_ip(0, playerspeed(1))
+        core.move_ip(0, playerspeed(1))
+        direction = "down"
+    if key[pygame.K_s] and key[pygame.K_a]:
+        direction = "dl"
+    if key[pygame.K_w] and key[pygame.K_a]:
+        direction = "ul"
+    if key[pygame.K_s] and key[pygame.K_d]:
+        direction = "dr"
+    if key[pygame.K_w] and key[pygame.K_d]:
+        direction = "ur"
+
+    if key[pygame.K_LSHIFT] == True:
+        buff = 2
+    elif key[pygame.K_LSHIFT] == False:
+        buff = 1
+
+#boss
+
+#end
+
+    for event in pygame.event.get():
+        if event.type == KEYDOWN:
+            if event.key == pygame.K_q:
+                dash_active = True
+                dash_timer = pygame.time.get_ticks()
+        if event.type == USEREVENT+1:
+            attack_x = random.randint(50, 1390)
+            warner = pygame.Rect(attack_x - 10, -30, 100, 100)
+            attack_timer = pygame.time.get_ticks()
+            start = True
+        if event.type == USEREVENT+2:
+            attack_y = random.randint(50, 814)
+            warnerbro = pygame.Rect(-30, attack_y - 10, 100, 100)
+            attack_timer2 = pygame.time.get_ticks()
+            start2 = True
+
+
+
+
+
+        elif event.type == pygame.QUIT:
+            run = False
+
+    if dash_active == True:
+        dash()
+        if pygame.time.get_ticks() - dash_timer > DASH_DURATION:
+            dash_active = False
+
+    if start2 == True:
+        rect((200, 200, 200), warnerbro)
+        if pygame.time.get_ticks() - attack_timer2 > WARNING_DURATION2:
+            atk2 = True
+            start2 = False
+
+    if atk2 == True:
+        attack_timer2 = pygame.time.get_ticks()
+        finish2 = True
+        atk2 = False
+
+    if finish2 == True:
+        attack_2 = pygame.Rect(70, attack_y, 1500, 80)
+        rect((0, 200, 255), attack_2)
+        rect((200, 200, 200), warnerbro)
+        if pygame.time.get_ticks() - attack_timer2 > ATTACK_DURATION2:
+            attack_2 = pygame.Rect(10000, attack_y, 80, 1500)
+            finish2 = False
+
+    if start == True:
+        rect((200, 200, 200), warner)
+        if pygame.time.get_ticks() - attack_timer > WARNING_DURATION:
+            atk = True
+            start = False
+
+    if atk == True:
+        attack_timer = pygame.time.get_ticks()
+        finish = True
+        atk = False
+
+    if finish == True:
+        attack_1 = pygame.Rect(attack_x, 70, 80, 1000)
+        rect((0, 200, 255), attack_1)
+        rect((200, 200, 200), warner)
+        if pygame.time.get_ticks() - attack_timer > ATTACK_DURATION:
+            attack_1 = pygame.Rect(attack_x, 10000, 80, 1000)
+            finish = False
+
+    if lives < 0:
+        run = False
+
+    pygame.display.update()
+
+pygame.quit()
